@@ -1,0 +1,38 @@
+name: CI | Cleanup
+
+# When a pull request closes (merged or not), deletes the prerelease tags and GitHub releases its branch created.
+# See release/cleanup.cjs.
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch whose releases to delete
+        required: true
+
+concurrency:
+  cancel-in-progress: false
+  group: cleanup-${{ github.head_ref || inputs.branch }}
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - id: checkout
+        name: 🔎 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - id: cleanup
+        name: 🧹 Delete branch releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.head_ref || inputs.branch }}
+        run: node release/cleanup.cjs "$BRANCH"

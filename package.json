@@ -1,0 +1,88 @@
+{
+  "name": "consideraweb-ng-template",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "npm run app:serve",
+    "build": "npm run app:build",
+    "watch": "npm run app:watch",
+    "test": "npm run app:test",
+    "all:a": "npm run all:audit",
+    "all:b": "npm run all:build",
+    "all:ci": "npm run all:clean-install",
+    "all:ci:safe": "npm run all:clean-install:safe",
+    "all:i": "npm run all:install",
+    "all:s": "npm run all:serve",
+    "all:t": "npm run all:test",
+    "all:w": "npm run all:watch",
+    "all:audit": "npm run root:audit",
+    "all:build": "npm run app:build",
+    "all:clean-install": "npm run root:clean-install",
+    "all:clean-install:safe": "npm run root:clean-install:safe",
+    "all:install": "npm run root:install",
+    "all:serve": "npm run app:serve",
+    "all:test": "npm run app:test",
+    "all:watch": "npm run app:watch",
+    "root:a": "npm run root:audit",
+    "root:ci": "npm run root:clean-install",
+    "root:ci:safe": "npm run root:clean-install:safe",
+    "root:i": "npm run root:install",
+    "root:audit": "npm audit",
+    "root:clean-install": "npm ci",
+    "root:clean-install:safe": "npm ci --ignore-scripts",
+    "root:install": "npm i",
+    "app:b": "npm run app:build",
+    "app:s": "npm run app:serve",
+    "app:t": "npm run app:test",
+    "app:w": "npm run app:watch",
+    "app:build": "ng build --configuration production",
+    "app:serve": "ng serve --configuration development",
+    "app:test": "ng test",
+    "app:watch": "ng build --configuration development --watch"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
+  },
+  "private": true,
+  "packageManager": "npm@12.0.1",
+  "dependencies": {
+    "@angular/cdk": "^21.0.0",
+    "@angular/common": "^21.0.0",
+    "@angular/compiler": "^21.0.0",
+    "@angular/core": "^21.0.0",
+    "@angular/elements": "^21.0.0",
+    "@angular/forms": "^21.0.0",
+    "@angular/platform-browser": "^21.0.0",
+    "@angular/router": "^21.0.0",
+    "@considera-core/angular-extensions": "^1.0.5-ZC-CWEB-GH",
+    "@tylertech/forge": "^3.13.1",
+    "@tylertech/forge-angular": "^7.2.0",
+    "@tylertech/tyler-icons": "^2.2.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^21.0.5",
+    "@angular/cli": "^21.0.5",
+    "@angular/compiler-cli": "^21.0.0",
+    "jsdom": "^27.1.0",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.8"
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.6.0": true,
+    "core-js-pure@3.50.0": true,
+    "esbuild@0.28.1": true,
+    "lmdb@3.5.1": true,
+    "msgpackr-extract@3.0.4": true
+  }
+}

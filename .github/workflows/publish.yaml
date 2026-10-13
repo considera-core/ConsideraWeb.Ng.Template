@@ -1,0 +1,128 @@
+name: CI | Publish
+
+# master releases 1.2.3: deploys to the prod artifact bucket through the Production environment, then tags and creates
+# a GitHub release. Any other branch builds and tags 1.2.3-N.BRANCH-NAME as a GitHub prerelease, each push bumping the
+# previous one; cleanup.yaml deletes them when the branch's pull request closes. See release/release.cjs.
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+concurrency:
+  cancel-in-progress: false
+  group: publish-${{ github.ref }}
+
+permissions:
+  contents: write
+  packages: read
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - id: checkout
+        name: 🔎 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - id: setup-node
+        name: ⚙️ Setup Node v24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: ./package-lock.json
+
+      - id: version
+        name: 🏷️ Determine version
+        run: node release/release.cjs --dry-run
+
+      - id: npm-ci
+        name: 📦 NPM CI
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+        run: |
+          npm ci
+          npm audit --audit-level=critical
+
+      - id: build
+        name: 🛠️ Build
+        run: npm run app:build
+
+      - id: upload-artifact
+        name: 📦 Upload Build Artifact
+        if: github.ref_name == 'master' && steps.version.outputs.version
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - id: release
+        name: 🚀 Tag Prerelease
+        if: github.ref_name != 'master' && steps.version.outputs.version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node release/release.cjs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref_name == 'master' && needs.build.outputs.version
+    environment: Production
+    steps:
+      - id: checkout
+        name: 🔎 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - id: setup-node
+        name: ⚙️ Setup Node v24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - id: download-artifact
+        name: 📥 Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - id: configure-aws
+        name: 📝 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_S3_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_S3_REGION }}
+
+      - id: deploy-s3
+        name: ⚡ Upload to S3
+        env:
+          S3_DEST: s3://${{ vars.AWS_S3_ARTIFACTS_BUCKET }}/ConsideraWeb.Ng.Template/prod/latest
+        run: |
+          aws s3 sync ./dist "$S3_DEST/" --delete
+          cat <<EOF > metadata.json
+          {
+            "version": "${{ needs.build.outputs.tag }}",
+            "environment": "prod",
+            "image": "NULL",
+            "commit": "${{ github.sha }}",
+            "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          }
+          EOF
+          aws s3 cp metadata.json "$S3_DEST/metadata.json"
+
+      - id: release
+        name: 🚀 Tag Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node release/release.cjs

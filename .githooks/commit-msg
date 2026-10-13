@@ -1,0 +1,2 @@
+#!/bin/sh
+node release/validate-commit.cjs "$1"
