@@ -5,20 +5,11 @@ Checklist for standing up ConsideraWeb.Ng.Template.
 ## 1. Create
 
 - [ ] From the template: `node scripts/create.mjs ConsideraWeb.Ng.Some.Name --port 42xx` (pick a port no other app uses)
-- [ ] Add the folder to `ConsideraWeb.code-workspace` if you open it from there
 
-## 2. Local
-
-- [ ] `NODE_AUTH_TOKEN` is set (GitHub PAT with `read:packages`) so `npm i` can reach `@considera-core`
-- [ ] `npm i` then `npm audit` is clean, or update packages while the project is new
-- [ ] `npm start` opens http://localhost:4299/template/home on a blank page with no console errors
-- [ ] `npm run build` and `npm test` pass
-- [ ] `git config core.hooksPath` prints `.githooks` (create.mjs sets it; a fresh clone needs it again)
-- [ ] Replace `public/favicon.ico` if this app should have its own
 
 ## 3. GitHub
 
-- [ ] Create `considera-core/ConsideraWeb.Ng.Template` (empty, no README) and `git remote add origin ...`
+- [ ] Publish via GitHub Desktop
 - [ ] Secret `NODE_AUTH_TOKEN` (same PAT as local) under Settings > Secrets and variables > Actions
 - [ ] Environment `Production`, restricted to `master`, with variables
   - [ ] `AWS_S3_ROLE_ARN` (the GitHub deploy role in account 4979)
@@ -40,8 +31,3 @@ Checklist for standing up ConsideraWeb.Ng.Template.
 - [ ] Replace the `home` route in `src/app/app.routes.ts` with real routes (keep one at `home`, the CDN redirects there)
 - [ ] Fill in `app.component.html` / `.ts` / `.scss`, and `<title>` in `src/index.html` if the default is wrong
 - [ ] Update `README.md` with what the app is for
-
-## Template only (delete this section in a new project)
-
-- [ ] Don't give the template repo a `Production` environment, so a push there never deploys
-- [ ] When Maintenance or another app changes its CI, `release/`, packages or styles, copy the change back here
