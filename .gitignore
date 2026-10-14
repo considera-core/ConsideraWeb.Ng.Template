@@ -41,3 +41,12 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Secrets and local certificates
+.env
+*.pem
+*.pfx
+*.cer
+
+# Per-machine agent settings
+.claude/settings.local.json

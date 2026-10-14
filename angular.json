@@ -83,8 +83,13 @@
           },
           "defaultConfiguration": "development",
           "options": {
+            "host": "local.considera.dev",
             "port": 4299,
-            "servePath": "/template/"
+            "servePath": "/template/",
+            "ssl": true,
+            "sslCert": "../ConsideraWeb.Proxy/local.considera.dev.pem",
+            "sslKey": "../ConsideraWeb.Proxy/local.considera.dev-key.pem",
+            "proxyConfig": "proxy.conf.json"
           }
         },
         "test": {

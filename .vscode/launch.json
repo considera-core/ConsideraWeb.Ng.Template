@@ -7,7 +7,7 @@
       "type": "chrome",
       "request": "launch",
       "preLaunchTask": "npm: start",
-      "url": "http://localhost:4299/template/home"
+      "url": "https://local.considera.dev:4299/template/home"
     },
     {
       "name": "ng test",

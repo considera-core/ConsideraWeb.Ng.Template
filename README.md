@@ -4,12 +4,15 @@ Angular 21 app on Forge and `@considera-core/angular-extensions`, served at `/te
 
 ## Commands
 
-| Command         | Does                                              |
-|-----------------|---------------------------------------------------|
-| `npm i`         | Install (needs `NODE_AUTH_TOKEN`, see `.npmrc`)   |
-| `npm start`     | Serve at http://localhost:4299/template/home      |
-| `npm run build` | Production build to `dist/consideraweb-ng-template/browser` |
-| `npm test`      | Unit tests (Vitest)                               |
+| Command         | Does                                                                     |
+|-----------------|--------------------------------------------------------------------------|
+| `npm i`         | Install (needs `NODE_AUTH_TOKEN`, see `.npmrc`)                          |
+| `npm start`     | Serve at https://local.considera.dev:4299/template/home, `/api` proxied to :5079 |
+| `npm run build` | Production build to `dist/consideraweb-ng-template/browser`              |
+| `npm test`      | Unit tests (Vitest)                                                      |
+
+`npm start` needs `local.considera.dev` pointing at `127.0.0.1` in the hosts file and the dev certificates in
+`../ConsideraWeb.Proxy`. The API proxy is in `proxy.conf.json`.
 
 ## Releases
 

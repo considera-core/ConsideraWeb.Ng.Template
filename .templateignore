@@ -1,0 +1,22 @@
+# Files and folders Create-Ng and Sync-Ng leave alone: never copied into a new app, never synced either way.
+# One name per line, matched against a file or folder name anywhere in the tree (* and ? wildcards work).
+# A trailing / means a folder. Lines starting with # are comments.
+
+# Template tooling
+.templateignore
+Create-Ng.bat
+Sync-Ng.bat
+SyncNg.ps1
+add-to-path.ps1
+
+# Git, installs and build output
+.git/
+node_modules/
+.angular/
+dist/
+out-tsc/
+coverage/
+
+# Per-machine editor and agent settings
+.idea/
+.claude/

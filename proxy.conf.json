@@ -1,0 +1,8 @@
+{
+  "/api/**": {
+    "target": "https://local.considera.dev:5079",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

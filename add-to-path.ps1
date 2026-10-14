@@ -1,4 +1,4 @@
-# Adds this template's folder to the current user's PATH so create.bat can be run from anywhere.
+# Adds this template's folder to the current user's PATH so Create-Ng and Sync-Ng can be run from anywhere.
 # Usage: powershell -ExecutionPolicy Bypass -File add-to-path.ps1
 # Safe to run again: it does nothing if the folder is already on PATH. Open a new terminal afterwards to pick it up.
 $ErrorActionPreference = 'Stop'
