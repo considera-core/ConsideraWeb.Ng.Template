@@ -9,7 +9,7 @@ Checklist for standing up ConsideraWeb.Ng.Template.
 
 ## 2. Local
 
-- [ ] `npm start` opens https://local.considera.dev:4299/template/home with no console errors
+- [ ] `npm start` opens https://local.considera.dev/template/home with no console errors
 - [ ] `npm run build` and `npm test` pass
 - [ ] Replace `public/favicon.ico` if this app should have its own
 
