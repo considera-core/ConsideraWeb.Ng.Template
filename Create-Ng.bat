@@ -76,9 +76,10 @@ ECHO   title:   %Title%
 ECHO Next: work through TODO.md.
 EXIT /B 0
 
-:: Adds one .templateignore entry (%1) to XD or XF.
+:: Adds one .templateignore entry (%1) to XD or XF. "sync:" lines only stop Sync-Ng, so new apps still get those files.
 :Ignore
 SET "Entry=%~1"
+IF /I "%Entry:~0,5%"=="sync:" EXIT /B
 IF "%Entry:~-1%"=="/" (SET XD=%XD% "%Entry:~0,-1%") ELSE (SET XF=%XF% "%Entry%")
 EXIT /B
 

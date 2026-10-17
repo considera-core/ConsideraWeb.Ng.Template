@@ -1,6 +1,8 @@
 # Files and folders Create-Ng and Sync-Ng leave alone: never copied into a new app, never synced either way.
 # One name per line, matched against a file or folder name anywhere in the tree (* and ? wildcards work).
 # A trailing / means a folder. Lines starting with # are comments.
+# "sync: <path>" lines are different: they name one exact file (path from the template root, as named in the
+# template) that Sync-Ng never syncs but Create-Ng still copies into new apps. Sync-Ng's [i] answer adds them.
 
 # Template tooling
 .templateignore

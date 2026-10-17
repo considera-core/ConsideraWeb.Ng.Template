@@ -1,14 +1,19 @@
 # Steps through the template's files and offers to copy each one that differs into a sibling repo, renamed for it.
-# Usage: Sync-Ng ConsideraWeb.Ng.Some.Name [-Reverse]
+# Usage: Sync-Ng ConsideraWeb.Ng.Some.Name [-Reverse] [-Force]
 #   -Reverse  copy from the repo back into the template, turning the repo's names back into the template's
+#   -Force    run even when either repo has uncommitted changes
+# Both repos must be clean (nothing to commit) so that, at the end, git diff shows exactly what this run changed.
 # The template's placeholder names (ConsideraWeb.Ng.Template, 4299, ...) are swapped for the repo's own names before
 # comparing, so diffs only show real changes. The repo's names are read from its package.json, angular.json and
-# src/index.html, and shown first so they can be checked or corrected. Files in .templateignore are skipped, and files that exist only on the receiving side are left
-# alone. Line-ending-only differences don't count. For each file that differs it shows a diff and asks:
-#   y  copy it    n  skip it    f  skip the rest of this folder    c  open the diff in VS Code    q  stop
+# src/index.html, and shown first so they can be checked or corrected. Files in .templateignore are skipped, and files
+# that exist only on the receiving side are left alone. Line-ending-only differences don't count. For each file that differs it shows a diff and asks:
+#   y  copy it    n  skip it    f  skip the rest of this folder    i  never sync it    c  open the diff in VS Code    q  stop
+# "never sync it" adds a sync: line for the file to .templateignore, so later syncs skip it in both directions while
+# Create-Ng still copies it into new apps (use it for files every app makes its own, like app.component.html).
 param(
     [Parameter(Mandatory = $true)][string]$Repo,
-    [switch]$Reverse
+    [switch]$Reverse,
+    [switch]$Force
 )
 $ErrorActionPreference = 'Stop'
 
@@ -17,12 +22,53 @@ $target = if ([IO.Path]::IsPathRooted($Repo)) { $Repo.TrimEnd('\') } else { Join
 if (-not (Test-Path -LiteralPath $target -PathType Container)) { throw "$target does not exist." }
 $repoName = Split-Path $target -Leaf
 
+# Runs git in $root. safe.directory=* lets git read repos owned by another account (e.g. Administrators), and
+# core.safecrlf=false hides the "LF will be replaced by CRLF" warnings.
+function Invoke-Git([string]$root) {
+    $ErrorActionPreference = 'Continue'
+    git -c safe.directory=* -c core.safecrlf=false -C $root @args
+}
+
+# Stops unless both repos have nothing to commit, so the closing git diff shows only this run's changes.
+if (-not $Force) {
+    $dirty = $false
+    foreach ($root in $template, $target) {
+        $status = @(Invoke-Git $root status --porcelain 2>$null)
+        if ($LASTEXITCODE -ne 0) { throw "$root is not a git repo." }
+        if ($status.Count) {
+            Write-Host "$(Split-Path $root -Leaf) has uncommitted changes:" -ForegroundColor Red
+            $status | ForEach-Object { Write-Host "  $_" }
+            $dirty = $true
+        }
+    }
+    if ($dirty) {
+        Write-Host 'Commit or stash them first (or run again with -Force).' -ForegroundColor Red
+        exit 1
+    }
+}
+
 # --- Ignore list -----------------------------------------------------------------------------------------------------
 
-$ignore = Get-Content -LiteralPath (Join-Path $template '.templateignore') |
+$ignorePath = Join-Path $template '.templateignore'
+$ignore = Get-Content -LiteralPath $ignorePath |
     ForEach-Object { $_.Trim() } | Where-Object { $_ -and -not $_.StartsWith('#') }
+# "sync: <path>" lines name one exact file (as it is named in the template) that is never synced, but is still copied
+# into new apps. Every other line is a name matched anywhere, which Create-Ng skips too.
+$syncOnly = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+$ignore | Where-Object { $_ -match '^sync:\s*(.+)$' } | ForEach-Object { [void]$syncOnly.Add($Matches[1].Trim()) }
+$ignore = @($ignore | Where-Object { $_ -notmatch '^sync:' })
 $ignoreDirs = @($ignore | Where-Object { $_.EndsWith('/') } | ForEach-Object { $_.TrimEnd('/') })
 $ignoreFiles = @($ignore | Where-Object { -not $_.EndsWith('/') })
+
+# Adds a sync: line for $templateRel to .templateignore, under its own heading the first time.
+function Add-SyncIgnore([string]$templateRel) {
+    $text = [IO.File]::ReadAllText($ignorePath)
+    $heading = '# Never synced by Sync-Ng (Create-Ng still copies these into new apps)'
+    $add = if ($text -match [regex]::Escape($heading)) { '' } else { "`n$heading`n" }
+    if ($text.Length -and -not $text.EndsWith("`n")) { $add = "`n$add" }
+    [IO.File]::AppendAllText($ignorePath, "${add}sync: $templateRel`n", (New-Object Text.UTF8Encoding $false))
+    [void]$syncOnly.Add($templateRel)
+}
 
 # True when the file's name, or any folder on its path, is in .templateignore (same matching as robocopy /XF and /XD).
 function Test-Ignored([string]$rel) {
@@ -35,10 +81,9 @@ function Test-Ignored([string]$rel) {
 }
 
 # Files under $root as forward-slash relative paths: what git tracks plus untracked files it doesn't ignore, or every
-# file when $root isn't a repo. safe.directory=* lets git read repos owned by another account (e.g. Administrators).
+# file when $root isn't a repo.
 function Get-RelativeFiles([string]$root) {
-    $ErrorActionPreference = 'Continue'
-    $list = git -c safe.directory=* -C $root ls-files --cached --others --exclude-standard 2>$null
+    $list = Invoke-Git $root ls-files --cached --others --exclude-standard 2>$null
     if ($LASTEXITCODE -ne 0) {
         $list = Get-ChildItem -LiteralPath $root -Recurse -File -Force |
             ForEach-Object { $_.FullName.Substring($root.Length + 1).Replace('\', '/') }
@@ -155,8 +200,9 @@ $src = if ($Reverse) { $target } else { $template }
 $dst = if ($Reverse) { $template } else { $target }
 $staging = Join-Path ([IO.Path]::GetTempPath()) "Sync-Ng-$PID"
 New-Item -ItemType Directory -Force $staging | Out-Null
+$question = if ($Reverse) { 'Copy to template?' } else { 'Copy from template?' }
 $skippedDirs = @{}
-$copied = 0; $skipped = 0; $same = 0
+$copied = 0; $skipped = 0; $same = 0; $neverSync = 0
 
 try {
     foreach ($rel in (Get-RelativeFiles $src)) {
@@ -165,6 +211,9 @@ try {
 
         $srcPath = Join-Path $src $rel
         $dstRel = Rename-Text $rel $false
+        # sync: lines name the file as it is named in the template, whichever way this run goes.
+        $templateRel = if ($Reverse) { $dstRel } else { $rel }
+        if ($syncOnly.Contains($templateRel)) { continue }
         $dstPath = Join-Path $dst $dstRel
         $exists = Test-Path -LiteralPath $dstPath -PathType Leaf
         $isBinary = $rel -match $binary
@@ -189,12 +238,17 @@ try {
         else { Show-NewFile $text }
 
         while ($true) {
-            $answer = (Read-Host 'Copy? [y]es [n]o [f] skip folder [c] VS Code diff [q]uit').ToLower()
+            $answer = (Read-Host "$question [y]es [n]o [f] skip folder [i] never sync [c] VS Code diff [q]uit").ToLower()
             if ($answer -eq 'c') {
                 if ($exists) { & code --diff $dstPath $incoming } else { & code $incoming }
                 continue
             }
-            if ($answer -in 'y', 'n', 'f', 'q') { break }
+            if ($answer -in 'y', 'n', 'f', 'i', 'q') { break }
+        }
+        if ($answer -eq 'i') {
+            Add-SyncIgnore $templateRel
+            Write-Host "  added 'sync: $templateRel' to .templateignore; it won't be offered again" -ForegroundColor DarkYellow
+            $neverSync++
         }
         if ($answer -eq 'q') { break }
         if ($answer -eq 'y') {
@@ -213,3 +267,18 @@ try {
 
 Write-Host ''
 Write-Host "Done: $copied copied, $skipped skipped, $same already the same." -ForegroundColor Cyan
+if ($neverSync) {
+    Write-Host "$neverSync file(s) added to .templateignore as never synced. Commit that change in the template." -ForegroundColor DarkYellow
+}
+
+# Everything uncommitted in the receiving repo is from this run (it started clean, unless -Force).
+if ($copied) {
+    Write-Host ''
+    Write-Host "git diff in $(Split-Path $dst -Leaf):" -ForegroundColor Cyan
+    Invoke-Git $dst --no-pager diff --color=always
+    $new = @(Invoke-Git $dst ls-files --others --exclude-standard)
+    if ($new.Count) {
+        Write-Host 'New files:' -ForegroundColor Cyan
+        $new | ForEach-Object { Write-Host "  $_" -ForegroundColor Green }
+    }
+}
