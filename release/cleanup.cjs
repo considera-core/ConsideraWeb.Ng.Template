@@ -1,6 +1,6 @@
 // Deletes a branch's prerelease git tags and GitHub releases.
 // Usage: node release/cleanup.cjs BRANCH-NAME [--dry-run]
-// Matches what release.cjs tags for that branch: v1.2.3-N.BRANCH-NAME.
+// Matches what release.cjs tags for that branch: 1.2.3-N.BRANCH-NAME (and older v1.2.3-N.BRANCH-NAME tags).
 const { execFileSync } = require('node:child_process');
 
 const DRY_RUN = process.argv.includes('--dry-run');
@@ -25,9 +25,9 @@ const tryRun = (cmd, args) => {
 
 const suffix = branch.replace(/[^A-Za-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
 const escaped = suffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const isBranchTag = (t) => new RegExp(`^v\\d+\\.\\d+\\.\\d+-\\d+\\.${escaped}$`).test(t);
+const isBranchTag = (t) => new RegExp(`^v?\\d+\\.\\d+\\.\\d+-\\d+\\.${escaped}$`).test(t);
 
-const tags = run('git', ['tag', '-l', 'v*']).split('\n').filter(isBranchTag);
+const tags = run('git', ['tag', '-l']).split('\n').filter(isBranchTag);
 console.log(`${tags.length} tags belong to ${branch}: ${tags.join(', ') || '(none)'}`);
 if (DRY_RUN) process.exit(0);
 

@@ -19,7 +19,7 @@ Checklist for standing up ConsideraWeb.Ng.Template.
 - [ ] Secret `NODE_AUTH_TOKEN` (same PAT as local) under Settings > Secrets and variables > Actions
 - [ ] Environment `Production`, restricted to `master`, with variables `AWS_S3_ROLE_ARN` (the GitHub deploy role in
   account 4979), `AWS_S3_REGION` and `AWS_S3_ARTIFACTS_BUCKET` (`prod-consideraweb-artifacts`)
-- [ ] Push `master` and check the Publish run deploys and tags `v1.0.0`
+- [ ] Push `master` and check the Publish run deploys and tags `1.0.0`
 - [ ] Open a test PR and check its prerelease tag is deleted by Cleanup when the PR closes
 
 ## 4. Serve it

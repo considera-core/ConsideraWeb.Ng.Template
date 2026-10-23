@@ -17,5 +17,5 @@ Angular 21 app on Forge and `@considera-core/angular-extensions`, served at `/te
 ## Releases
 
 Commit headers are `[Major|Minor] [XX-CWEB-123] Title`; no keyword means a patch. Pushing to `master` deploys to S3
-and tags `v1.2.3`; other branches tag `v1.2.3-N.BRANCH` prereleases, deleted when the branch's PR closes. See
+and tags `1.2.3`; other branches tag `1.2.3-N.BRANCH` prereleases, deleted when the branch's PR closes. See
 `release/`.

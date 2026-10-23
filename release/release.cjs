@@ -3,6 +3,7 @@
 //   other branch -> 1.2.3-N.BRANCH-NAME (branch case kept), a GitHub prerelease that cleanup.cjs deletes when its PR closes.
 // A branch's 1.2.3 is the version master will release when the branch merges, and N counts the branch's releases of it
 // (1.2.3-0.X, 1.2.3-1.X, ...), so every branch build sorts below the 1.2.3 it becomes. The first release is 1.0.0.
+// Tags have no v prefix; older v-prefixed tags are still read so versions carry on from them.
 // Commit headers: [Major|Minor] [STORY-123] Title (default is a patch). See commit-format.cjs.
 // Usage: node release/release.cjs [--dry-run]
 // The version and tag are written to $GITHUB_OUTPUT either way, so the workflow can deploy before it tags.
@@ -30,10 +31,10 @@ const tryRun = (cmd, args) => {
   }
 };
 
-const tagged = git('tag', '-l', 'v*').split('\n').filter(Boolean);
+const tagged = git('tag', '-l').split('\n').filter(Boolean);
 const cmp = (a, b) => a.core.reduce((d, n, i) => d || n - b.core[i], 0);
 const versions = tagged
-  .map((t) => /^v(\d+)\.(\d+)\.(\d+)(?:-(.+))?$/.exec(t))
+  .map((t) => /^v?(\d+)\.(\d+)\.(\d+)(?:-(.+))?$/.exec(t))
   .filter(Boolean)
   .map((m) => {
     const branchPre = /^(\d+)\.(.+)$/.exec(m[4] ?? '');
@@ -71,7 +72,7 @@ const core = stable ? bump(stable.core) : BASE;
 const sameCore = ownReleases.filter((t) => cmp(t, { core }) === 0);
 const increment = sameCore.length ? Math.max(...sameCore.map((t) => t.n)) + 1 : 0;
 const version = core.join('.') + (isMaster ? '' : `-${increment}.${suffix}`);
-const tag = `v${version}`;
+const tag = version;
 
 const notes = SECTIONS.map(([key, heading]) => {
   const lines = commits.filter((c) => c.parsed.release === key).map((c) => `- ${c.parsed.storyId ? `**${c.parsed.storyId}** ` : ''}${c.parsed.title} (${c.short})`);
