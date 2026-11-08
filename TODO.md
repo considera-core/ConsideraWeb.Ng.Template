@@ -9,7 +9,8 @@ Checklist for standing up ConsideraWeb.Ng.Template.
 
 ## 2. Local
 
-- [ ] `npm start` opens https://local.considera.dev/template/home with no console errors
+- [ ] Add application to ConsideraWeb.Proxy Caddyfile
+- [ ] `npm run root-run` opens https://local.considera.dev/template/home with no console errors
 - [ ] `npm run build` and `npm test` pass
 - [ ] Replace `public/favicon.ico` if this app should have its own
 

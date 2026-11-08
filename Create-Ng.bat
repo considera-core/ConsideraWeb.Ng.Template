@@ -65,7 +65,7 @@ IF ERRORLEVEL 1 EXIT /B 1
 git -C "%Target%" init -q -b master || EXIT /B 1
 git -C "%Target%" config core.hooksPath .githooks || EXIT /B 1
 PUSHD "%Target%"
-CALL npm run all:i
+CALL npm run root-install
 IF ERRORLEVEL 1 (POPD & EXIT /B 1)
 POPD
 
