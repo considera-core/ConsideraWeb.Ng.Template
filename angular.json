@@ -90,8 +90,8 @@
             "port": 4299,
             "servePath": "/template/",
             "ssl": true,
-            "sslCert": "../ConsideraWeb.Proxy/local.considera.dev.pem",
-            "sslKey": "../ConsideraWeb.Proxy/local.considera.dev-key.pem",
+            "sslCert": "/Environments/Considera/Dev/ConsideraWeb/ConsideraWeb.Proxy/local.considera.dev.pem",
+            "sslKey": "/Environments/Considera/Dev/ConsideraWeb/ConsideraWeb.Proxy/local.considera.dev-key.pem",
             "proxyConfig": "proxy.conf.json"
           }
         },

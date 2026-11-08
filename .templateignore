@@ -22,3 +22,6 @@ coverage/
 # Per-machine editor and agent settings
 .idea/
 .claude/
+
+# Never synced by Sync-Ng (Create-Ng still copies these into new apps)
+sync: package-lock.json

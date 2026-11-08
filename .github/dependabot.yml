@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    # Consolidate multiple updates into specific stacked PRs
+    groups:
+      # Stack 1: All patch and minor updates together
+      safe-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+      # Stack 2: Keep development dependencies in their own single PR
+      dev-dependencies:
+        dependency-type: "development"
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    groups:
+      # Stack 3: Combine all CI/Action updates into one PR
+      action-updates:
+        patterns:
+          - "*"

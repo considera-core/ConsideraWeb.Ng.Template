@@ -4,14 +4,11 @@
   "scripts": {
     "ng": "ng",
     "root-audit": "npm audit",
-    "root-build": "npm run app-build",
+    "root-build": "ng build --configuration production",
     "root-cleaninstall": "npm ci --ignore-scripts",
     "root-install": "npm i",
-    "root-run": "npm run app-run",
-    "root-test": "npm run app-test",
-    "app-build": "ng build --configuration production",
-    "app-run": "ng serve --configuration development",
-    "app-test": "ng test"
+    "root-run": "ng serve --configuration development",
+    "root-test": "ng test"
   },
   "prettier": {
     "printWidth": 100,
@@ -36,10 +33,10 @@
     "@angular/forms": "^21.0.0",
     "@angular/platform-browser": "^21.0.0",
     "@angular/router": "^21.0.0",
-    "@considera-core/angular-extensions": "1.0.5-2.ZC-CORE-42",
-    "@tylertech/forge": "^3.13.1",
-    "@tylertech/forge-angular": "^7.2.0",
-    "@tylertech/tyler-icons": "^2.2.0",
+    "@considera-core/angular-extensions": "1.0.19-10.ZC-CORE-155",
+    "@tylertech/forge": "^3.23.0",
+    "@tylertech/forge-angular": "^9.4.0",
+    "@tylertech/tyler-icons": "^2.3.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
