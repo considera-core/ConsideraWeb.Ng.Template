@@ -12,6 +12,7 @@ SETLOCAL
 IF "%~4"=="" (
     ECHO Usage: Create-Ng ConsideraWeb.Ng.Some.Name app title port
     ECHO Example: Create-Ng ConsideraWeb.Ng.Some.Name some-name "ConsideraWeb Some Name" 4200
+    ECHO Specific Example: Create-Ng ConsideraWeb.Ng.MusicPortal music "ConsideraWeb Music Portal" 4300
     EXIT /B 1
 )
 SET "Name=%~1"
